@@ -1,6 +1,6 @@
 #include <Stepper.h>
 
-#define LASER_PIN 7
+#define LASER_PIN 7                               //Тут наверное понятно, просто даем псевдонимы номерам пинов Arduino
 #define STEP_A 9
 #define STEP_B 10
 #define STEP_C 11
@@ -11,18 +11,18 @@ const int step_to_turn = 2048;                    //Число шагов дви
 const double a = 10;                              //Расстояние между лазером и датчиком
 const double h = 8.660254038;                     //Высота равностороннего треугольника
 const double H = 500.0;                           //Высота трубы к примеру 500мм
-bool finder = true;
+bool finder = true;                               //Логическая переменная, для запуска и остановки движения лазера
 int steps = 0;
-double Hv = 0;
-char bufferS[15];
+double Hv = 0;                                    // Переменная, куда мы сохраняем найденную высоту
+char bufferS[15];                                 //Это массив из 15 однобайтовых символов, для корректного отображения нашей высоты в терминале
 Stepper stepper = Stepper(4096, STEP_A,STEP_B,STEP_C,STEP_D);
 
 void setup() {
-   Serial.begin(9600);
-   pinMode(DETECTOR_PIN, INPUT);
-   pinMode(LASER_PIN, OUTPUT);
-   attachInterrupt(0, calculate, CHANGE);           //Установка прерывания
-   stepper.setSpeed(1);
+   Serial.begin(9600);                            //Это настройка последовательного порта(это просто для вывода на экран нашей информации)
+   pinMode(DETECTOR_PIN, INPUT);                  //Настраиваем пин,куда фотодатчик подключен как ВХОД
+   pinMode(LASER_PIN, OUTPUT);                    //Ну, а где лазер - на ВЫХОД
+   attachInterrupt(0, calculate, CHANGE);           //Установка прерывания(наверно понятно)
+   stepper.setSpeed(1);                           //
 
 }
 
@@ -34,9 +34,9 @@ void loop() {
   }else{                                     //если датчик сработал, то..
     Hv = (H - (steps * 0.001953) - h);       //считаем по формуле уровень
     digitalWrite(LASER_PIN, LOW);            //тушим лазер
-    dtostrf(Hv, 4,4, bufferS);               // Печатаем все на экран
+    dtostrf(Hv, 4,4, bufferS);               // Это короче функция языка Си, для перевода double в строку, корорую мы помещаем в buffeS. Чтобы напечатать
     Serial.println("\nУровень найден!");
-    Serial.print(Hv);
+    Serial.print(bufferS);                   //Ну тут печатаем нашу высоту. С 4мя цифрами после запятой.
     Serial.print(" mm");
     delay(5000);                             //ждем 5 секунд и снова ищем уровень
     finder = true;                            // ставим финдер в тру, чтобы снова начать поиск
@@ -44,5 +44,5 @@ void loop() {
 }
 //Обработчик прерывания
 void calculate(){
-  finder = false;
+  finder = false;                           //Когда фото ловит лазер, то срабатывает эта функция и лазер останавливается, т.к. finder становится FALSE
 }
